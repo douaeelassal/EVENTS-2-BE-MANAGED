@@ -1,0 +1,32 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual deployment
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy via FTP/SFTP
+      uses: SamKirkland/FTP-Deploy-Action@4.3.3
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./event2/
+        server-dir: ./public_html/
+        exclude: |
+          **/.git*
+          **/.github/**
+          **/node_modules/**
+          **/vendor/**
+          **/*.log
+          **/backup_*.tar.gz

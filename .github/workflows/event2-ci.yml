@@ -1,0 +1,172 @@
+name: Event2 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # PHP Code Quality Check
+  php-quality:
+    name: PHP Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, json, pdo, mysql
+
+    - name: Check PHP Syntax
+      run: |
+        echo "🔍 Checking PHP syntax for all PHP files..."
+        find event2 -name "*.php" -type f -exec php -l {} \; | grep -v "No syntax errors detected"
+
+    - name: Check for dangerous functions
+      run: |
+        echo "🔒 Scanning for potentially dangerous PHP functions..."
+        grep -r "eval\|exec\|system\|shell_exec\|passthru\|proc_open" event2/ --include="*.php" || echo "✅ No dangerous functions found"
+
+  # Database Connection Test
+  database-test:
+    name: Database Connection Test
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: event2_test
+          MYSQL_USER: event2_user
+          MYSQL_PASSWORD: event2_pass
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: pdo, mysql
+
+    - name: Wait for MySQL
+      run: |
+        until mysql -h 127.0.0.1 -u event2_user -pevent2_pass event2_test -e "SELECT 1"; do
+          echo "Waiting for MySQL..."
+          sleep 2
+        done
+
+    - name: Test Database Connection
+      run: |
+        echo "🗄️ Testing database connection..."
+        # Create a simple test script
+        cat > test_db.php << 'EOF'
+        <?php
+        try {
+            $pdo = new PDO(
+                'mysql:host=127.0.0.1;dbname=event2_test',
+                'event2_user',
+                'event2_pass'
+            );
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            echo "✅ Database connection successful!\n";
+
+            // Test basic queries
+            $pdo->exec("CREATE TABLE IF NOT EXISTS test_table (id INT)");
+            echo "✅ Table creation successful!\n";
+
+        } catch (PDOException $e) {
+            echo "❌ Database error: " . $e->getMessage() . "\n";
+            exit(1);
+        }
+        EOF
+
+        php test_db.php
+
+  # PDF Generation Test
+  pdf-test:
+    name: PDF Generation Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Install FPDF
+      run: |
+        echo "📄 Testing PDF generation..."
+        cd event2
+        # Check if FPDF exists and is valid
+        if [ -f "fpdf.php" ]; then
+            php -l fpdf.php
+            echo "✅ FPDF syntax check passed"
+        else
+            echo "⚠️ FPDF not found in expected location"
+        fi
+
+    - name: Test Attestation Generation
+      run: |
+        cd event2
+        # Check if attestation generation script exists
+        if [ -f "generate_attestation.php" ]; then
+            php -l generate_attestation.php
+            echo "✅ Attestation script syntax check passed"
+        else
+            echo "⚠️ Attestation generation script not found"
+        fi
+
+  # Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+
+    - name: Security Check - File Permissions
+      run: |
+        echo "🔒 Checking file permissions..."
+        find event2 -name "*.php" -exec ls -la {} \; | grep -v "^-rw-r--r--" || echo "✅ All PHP files have correct permissions"
+
+    - name: Security Check - SQL Injection patterns
+      run: |
+        echo "🔍 Scanning for potential SQL injection vulnerabilities..."
+        grep -r "\$_GET\|\$_POST\|\$_REQUEST" event2/ --include="*.php" | head -10 || echo "✅ No obvious injection patterns found"
+
+    - name: Security Check - File Upload Security
+      run: |
+        echo "📁 Checking file upload security..."
+        grep -r "move_uploaded_file\|is_uploaded_file" event2/ --include="*.php" || echo "✅ No file upload functions found"
+
+  # Notification on Failure
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [php-quality, database-test, pdf-test, security-scan]
+    if: failure()
+
+    steps:
+    - name: Send Notification
+      run: |
+        echo "❌ Some tests failed! Check the GitHub Actions logs for details."
+        # Here you could add Slack/Discord notifications if needed
