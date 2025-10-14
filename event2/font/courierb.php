@@ -1,0 +1,1 @@
+<?php $type='Core'; $name='Courier-Bold'; $displayName='Courier Bold'; $cw=array(0=>600); ?>

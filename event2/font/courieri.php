@@ -1,0 +1,1 @@
+<?php $type='Core'; $name='Courier-Oblique'; $displayName='Courier Oblique'; $cw=array(0=>600); ?>
