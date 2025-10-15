@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EVENT 2 - Chargement</title>
+    <title>EVENT2 - Loading Screen</title>
+
+    
     <style>
+        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* Main Layout */
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #02273f 0%, #0a1628 100%);
@@ -198,6 +202,7 @@
             animation: twinkle 3s ease-in-out infinite;
         }
 
+        /* Animation Keyframes */
         @keyframes titlePulse {
             0% {
                 opacity: 0;
@@ -285,7 +290,9 @@
         <p class="loading-text">Chargement<span class="dots"></span></p>
     </div>
 
+
     <script>
+
         function createStars() {
             const starsContainer = document.getElementById('stars');
             const numberOfStars = 150;
@@ -321,12 +328,20 @@
             }
         }
 
+        /**
+         * Redirect to main site after loading animation
+         * Automatically forwards users to home page
+         */
         function redirectToHome() {
             setTimeout(() => {
                 window.location.href = 'home.php';
             }, 1000);
         }
 
+        /**
+         * Initialize loading page
+         * Sets up all visual effects and auto-redirect
+         */
         window.addEventListener('load', () => {
             createStars();
             createParticles();

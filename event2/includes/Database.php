@@ -1,9 +1,29 @@
 <?php
+/**
+ * EVENT2 - Database Connection Class
+ * ================================
+ *
+ * Singleton pattern implementation for database connections.
+ * Provides centralized database access with proper error handling.
+ *
+ * Features:
+ * - Singleton pattern (single instance)
+ * - PDO with proper configuration
+ * - Error logging and handling
+ * - UTF-8 character set support
+ */
+
 declare(strict_types=1);
 
 class Database {
     private static ?PDO $instance = null;
-    
+
+    /**
+     * Get database instance using Singleton pattern
+     *
+     * @return PDO Database connection instance
+     * @throws Exception If connection fails
+     */
     public static function getInstance(): PDO {
         if (self::$instance === null) {
             try {
