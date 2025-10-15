@@ -35,6 +35,8 @@ if (!empty($_SESSION['flash_message'])) {
     <!-- Notifications -->
     <?php
     if (isset($_SESSION['user_id'])) {
+        require_once 'notifications.php';
+        $notificationSystem = new NotificationSystem(Database::getInstance());
         $unreadCount = $notificationSystem->countUnread($_SESSION['user_id']);
     }
     ?>
@@ -117,6 +119,8 @@ if (!empty($_SESSION['flash_message'])) {
                     </nav>
 
                     <div class="user-menu">
+                        <!-- Système de notifications -->
+                        <?php displayNotifications(Database::getInstance(), $_SESSION['user_id']); ?>
 
                         <div class="user-info">
                             <span class="user-name">

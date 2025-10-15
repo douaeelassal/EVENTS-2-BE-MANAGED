@@ -19,11 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Token de sécurité invalide');
         }
 
-        // Vérification reCAPTCHA temporairement désactivée pour le développement
-        // $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-        // if (!Security::verifyRecaptcha($recaptchaResponse)) {
-        //     throw new Exception('Vérification reCAPTCHA échouée. Veuillez cocher la case "Je ne suis pas un robot".');
-        // }
+        // Vérification reCAPTCHA
+        $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+        if (!Security::verifyRecaptcha($recaptchaResponse)) {
+            throw new Exception('Vérification reCAPTCHA échouée. Veuillez cocher la case "Je ne suis pas un robot".');
+        }
 
         // Récupération et validation des données
         $nom = Security::sanitizeInput($_POST['nom_complet'] ?? '');
@@ -131,10 +131,10 @@ include '../includes/header.php';
         </div>
 
 
-        <!-- reCAPTCHA temporairement désactivé pour le développement -->
-        <!-- <div class="form-group">
+        <!-- reCAPTCHA -->
+        <div class="form-group">
           <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" style="display: flex; justify-content: center; margin: 15px 0;"></div>
-        </div> -->
+        </div>
 
         <button type="submit" class="btn btn-primary" style="width:100%;">S'inscrire</button>
       </form>
@@ -144,8 +144,8 @@ include '../includes/header.php';
     </div>
   </div>
 
-  <!-- Script reCAPTCHA temporairement désactivé -->
-  <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+  <!-- Script reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <script>

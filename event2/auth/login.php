@@ -22,11 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Token de sécurité invalide');
         }
         
-        // Vérification reCAPTCHA temporairement désactivée pour le développement
-        // $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-        // if (!Security::verifyRecaptcha($recaptchaResponse)) {
-        //     throw new Exception('Vérification reCAPTCHA échouée. Veuillez cocher la case "Je ne suis pas un robot".');
-        // }
+        // Vérification reCAPTCHA
+        $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+        if (!Security::verifyRecaptcha($recaptchaResponse)) {
+            throw new Exception('Vérification reCAPTCHA échouée. Veuillez cocher la case "Je ne suis pas un robot".');
+        }
         
         $email = Security::sanitizeInput($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
@@ -138,10 +138,10 @@ include '../includes/header.php';
                     <input type="password" id="password" name="password" class="form-control" required>
                 </div>
 
-                <!-- reCAPTCHA temporairement désactivé pour le développement -->
-                <!-- <div class="form-group">
+                <!-- reCAPTCHA -->
+                <div class="form-group">
                     <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" style="display: flex; justify-content: center; margin: 15px 0;"></div>
-                </div> -->
+                </div>
 
                 <button type="submit" class="btn btn-primary" style="width: 100%;">
                     Se connecter
@@ -155,8 +155,8 @@ include '../includes/header.php';
         </div>
     </div>
 
-    <!-- Script reCAPTCHA temporairement désactivé -->
-    <!-- <script src="https://www.google.com/recaptcha/api.js" async defer></script> -->
+    <!-- Script reCAPTCHA -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </main>
 
 <?php include '../includes/footer.php'; ?>
